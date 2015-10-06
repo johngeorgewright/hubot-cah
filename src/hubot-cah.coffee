@@ -273,14 +273,14 @@ module.exports = (robot) ->
         responseString += "\n#{i}: #{cards[i]}"
     robot.messageRoom sender(msg), responseString
 
-  robot.respond /cah submit( [0-4])+$/i, (msg) ->
+  robot.respond /cah submit(\s+[0-4])+$/i, (msg) ->
     if sender(msg) == db.czar
       msg.reply "You are currently the Card Czar!"
       return
     if db.hands[sender(msg)].length < 5
       msg.reply "You have already submitted cards for this round."
       return
-    nums = msg.match[1].split(/\s+/)
+    nums = msg.match[1].trim().split(/\s+/)
     expectedCount = (db.blackCard.match(blackBlankRegExp) || []).length
     if expectedCount == 0
       expectedCount = 1
