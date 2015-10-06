@@ -46,6 +46,7 @@ helpSummary += "\ncah skip - Discard current black card and assign a new Card Cz
 
 
 blackBlank = "_____"
+blackBlankRegExp = new RegExp blackBlank, 'g'
 
 blackCards = require('./blackcards.coffee')
 
@@ -190,7 +191,7 @@ czar_choose_winner = (answerIndex) ->
     else
       db.czar = db.activePlayers[czarIndex+1]
   return responseString + "\n\nNext round:\n" + game_state_string()
-  
+
 # generate string describing game state
 # czar, black card, number of submissions
 game_state_string = () ->
@@ -206,7 +207,7 @@ sender = (msg) ->
 
 
 module.exports = (robot) ->
-  
+
   robot.respond /cah help$/i, (msg) ->
     msg.send helpSummary
 
@@ -215,7 +216,7 @@ module.exports = (robot) ->
 
   robot.respond /cah white$/i, (msg) ->
     msg.send random_white_card()
-  
+
   robot.respond /cah play$/i, (msg) ->
     name = sender(msg)
     add_player(name)
@@ -225,7 +226,7 @@ module.exports = (robot) ->
     name = sender(msg)
     remove_player(name)
     robot.messageRoom name, "You are no longer a CAH player. Your score will be preserved should you decide to play again."
-  
+
   robot.respond /cah czar$/i, (msg) ->
     if db.czar?
       msg.send db.czar
@@ -272,16 +273,15 @@ module.exports = (robot) ->
         responseString += "\n#{i}: #{cards[i]}"
     robot.messageRoom sender(msg), responseString
 
-  robot.respond /cah submit(?: ([0-4]+))+$/i, (msg) ->
+  robot.respond /cah submit( [0-4])+$/i, (msg) ->
     if sender(msg) == db.czar
       msg.reply "You are currently the Card Czar!"
       return
     if db.hands[sender(msg)].length < 5
       msg.reply "You have already submitted cards for this round."
       return
-    numString = msg.match[0].split("submit ")[1]
-    nums = numString.split(" ")
-    expectedCount = (db.blackCard.match(blackBlank) || []).length
+    nums = msg.match[1].split(/\s+/)
+    expectedCount = (db.blackCard.match(blackBlankRegExp) || []).length
     if expectedCount == 0
       expectedCount = 1
     if nums.length != expectedCount
